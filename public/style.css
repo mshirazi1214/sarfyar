@@ -1,0 +1,26 @@
+/* Import Vazirmatn font from CDN */
+@import url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;700&display=swap');
+
+body {
+    font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    /* Tailwind's default font stack is appended as a fallback */
+}
+
+/* Specific classes for fonts if needed, though body covers Vazirmatn */
+.font-vazir {
+    font-family: 'Vazirmatn', sans-serif;
+}
+
+.font-noto-naskh {
+    font-family: 'Noto Naskh Arabic', serif;
+}
+
+/* Tailwind base styles might apply their own font normalization.
+   If you're using Tailwind, ensure its configuration or your global styles align.
+   Since we're using Tailwind CDN, direct body styling is a straightforward way. */
+
+/* Add any other global styles or Tailwind overrides here */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Vazirmatn', sans-serif; /* Ensure headings also use Vazirmatn */
+}
