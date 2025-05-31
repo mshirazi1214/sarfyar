@@ -1,7 +1,7 @@
 import React from 'react';
 import { mockExercises } from '../mockExercises.js';
 
-function InteractiveExercises({ lessonId, lessonTitle }) {
+function InteractiveExercises({ lessonId, lessonTitle, onNavigateToLessonSection }) {
   const [lessonExercises, setLessonExercises] = React.useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = React.useState(0);
   const [feedback, setFeedback] = React.useState({ message: '', type: '' });
@@ -13,6 +13,7 @@ function InteractiveExercises({ lessonId, lessonTitle }) {
   const [selectedOptionId, setSelectedOptionId] = React.useState(null);
   const [userTrueFalseAnswer, setUserTrueFalseAnswer] = React.useState(null);
   const [userFillInput, setUserFillInput] = React.useState('');
+  const [lessonNavReference, setLessonNavReference] = React.useState(null);
 
   React.useEffect(() => {
     if (lessonId) {
@@ -32,6 +33,7 @@ function InteractiveExercises({ lessonId, lessonTitle }) {
       setShowFeedback(false);
       setIsAnswerSubmitted(false);
       setScore(0);
+      setLessonNavReference(null);
     } else {
       setLessonExercises([]);
       setError('');
@@ -60,6 +62,7 @@ function InteractiveExercises({ lessonId, lessonTitle }) {
 
     let isCorrect = false;
     let correctAnswerText = '';
+    setLessonNavReference(null);
 
     switch (currentQuestion.type) {
       case 'multiple-choice':
@@ -71,7 +74,7 @@ function InteractiveExercises({ lessonId, lessonTitle }) {
         break;
       case 'fill-in-the-blank':
         correctAnswerText = currentQuestion.correctAnswer;
-        if (userFillInput.trim().toLowerCase() === currentQuestion.correctAnswer.trim().toLowerCase()) { // Case-insensitive comparison
+        if (userFillInput.trim().toLowerCase() === currentQuestion.correctAnswer.trim().toLowerCase()) {
           isCorrect = true;
         }
         break;
@@ -95,8 +98,17 @@ function InteractiveExercises({ lessonId, lessonTitle }) {
       setFeedback({ message: 'آفرین! پاسخ شما صحیح است.', type: 'correct' });
     } else {
       let incorrectMsg = `متاسفانه پاسخ شما صحیح نبود. پاسخ صحیح: <strong class="font-bold">"${correctAnswerText}"</strong> بود.`;
-      if (currentQuestion.hint) {
-        incorrectMsg += `<br/>راهنمایی: ${currentQuestion.hint}`;
+
+      if (currentQuestion.detailedFeedbackOnWrong) {
+        if (currentQuestion.detailedFeedbackOnWrong.explanation) {
+          incorrectMsg += `<br/><br/><strong class="text-sm block mt-2 text-gray-700">توضیح بیشتر:</strong> <span class="font-normal text-gray-600">${currentQuestion.detailedFeedbackOnWrong.explanation}</span>`;
+        }
+        if (currentQuestion.detailedFeedbackOnWrong.lessonReference) {
+          setLessonNavReference(currentQuestion.detailedFeedbackOnWrong.lessonReference);
+        }
+      }
+      if (currentQuestion.hint && (!currentQuestion.detailedFeedbackOnWrong || !currentQuestion.detailedFeedbackOnWrong.explanation)) {
+         incorrectMsg += `<br/><br/><strong class="text-sm block mt-2 text-gray-700">راهنمایی:</strong> <span class="font-normal text-gray-600">${currentQuestion.hint}</span>`;
       }
       setFeedback({ message: incorrectMsg, type: 'incorrect' });
     }
@@ -107,7 +119,6 @@ function InteractiveExercises({ lessonId, lessonTitle }) {
 
   const handleNextQuestion = () => {
     if (!isAnswerSubmitted) return;
-
     if (currentQuestionIndex < lessonExercises.length - 1) {
       setCurrentQuestionIndex(prevIndex => prevIndex + 1);
       setSelectedOptionId(null);
@@ -116,37 +127,35 @@ function InteractiveExercises({ lessonId, lessonTitle }) {
       setShowFeedback(false);
       setIsAnswerSubmitted(false);
       setFeedback({ message: '', type: '' });
+      setLessonNavReference(null);
     } else {
-      // This state (all questions done) is handled by the top-level conditional rendering
-      // Trigger re-render to show completion message if it's the last question
+      // This is the last question, advance index to trigger completion message
       setCurrentQuestionIndex(prevIndex => prevIndex + 1);
       console.log("All questions completed. Final score:", score);
     }
   };
 
+  const handleNavigateClick = () => {
+    if (lessonNavReference && onNavigateToLessonSection) {
+      onNavigateToLessonSection(lessonNavReference);
+    }
+  };
+
   const renderQuestionType = () => {
     if (!currentQuestion) return null;
-    // Visual feedback styles
     const getOptionStyle = (option) => {
-        if (!isAnswerSubmitted || !showFeedback) return ''; // No specific style if not submitted or no feedback yet
-        if (option.isCorrect) return '!bg-green-100 !border-green-400 !text-green-700 ring-1 ring-green-300'; // Correct option style
-
-        // For multiple-choice or true-false, if this option was selected and it's incorrect
-        if (currentQuestion.type === 'multiple-choice' && selectedOptionId === option.id && !option.isCorrect) {
-          return '!bg-red-100 !border-red-400 !text-red-700 ring-1 ring-red-300'; // User's incorrect selection
-        }
-        if (currentQuestion.type === 'true-false' && userTrueFalseAnswer === option.isCorrect && !option.isCorrect) {
-            return '!bg-red-100 !border-red-400 !text-red-700 ring-1 ring-red-300'; // User's incorrect selection for T/F
-        }
-        return 'opacity-60 hover:opacity-80'; // Dim unselected, non-correct options after feedback
+        if (!isAnswerSubmitted || !showFeedback) return '';
+        if (option.isCorrect) return '!bg-green-100 !border-green-500 !text-green-800 ring-2 ring-green-300 shadow-md';
+        if (currentQuestion.type === 'multiple-choice' && selectedOptionId === option.id && !option.isCorrect) return '!bg-red-100 !border-red-500 !text-red-800 ring-2 ring-red-300 shadow-md';
+        if (currentQuestion.type === 'true-false' && userTrueFalseAnswer === option.isCorrect && option.isCorrect !== currentQuestion.correctAnswer) return '!bg-red-100 !border-red-500 !text-red-800 ring-2 ring-red-300 shadow-md';
+        return 'opacity-60 hover:opacity-100';
     };
     const getInputStyle = () => {
-        if (!isAnswerSubmitted || !showFeedback) return '';
+        if (!isAnswerSubmitted || !showFeedback) return 'border-gray-300 focus:ring-purple-400 focus:border-purple-500';
         const isFillCorrect = userFillInput.trim().toLowerCase() === currentQuestion.correctAnswer.trim().toLowerCase();
-        if (isFillCorrect) return '!bg-green-100 !border-green-400 !text-green-700';
-        return '!bg-red-100 !border-red-400 !text-red-700';
+        if (isFillCorrect) return '!bg-green-50 !border-green-500 !text-green-800 ring-1 ring-green-400';
+        return '!bg-red-50 !border-red-500 !text-red-800 ring-1 ring-red-400';
     };
-
 
     switch (currentQuestion.type) {
       case 'multiple-choice':
@@ -174,8 +183,7 @@ function InteractiveExercises({ lessonId, lessonTitle }) {
               value={userFillInput}
               onChange={handleFillInputChange}
               placeholder={currentQuestion.placeholder || "پاسخ خود را بنویسید..."}
-              className={`w-full p-3.5 border rounded-lg focus:ring-2 focus:ring-purple-400 focus:border-purple-500 transition-colors
-                          ${isAnswerSubmitted ? 'cursor-not-allowed ' + getInputStyle() : 'bg-white border-gray-300'}`}
+              className={`w-full p-3.5 border rounded-lg transition-colors ${isAnswerSubmitted ? 'cursor-not-allowed ' + getInputStyle() : 'bg-white ' + getInputStyle()}`}
               disabled={isAnswerSubmitted}
             />
           </div>
@@ -220,7 +228,6 @@ function InteractiveExercises({ lessonId, lessonTitle }) {
             <h3 className="text-2xl font-semibold mb-3">آفرین طلبه کوشا!</h3>
             <p className="text-lg">شما تمام تمرینات این درس را با موفقیت به پایان رساندید.</p>
             <p className="text-xl font-bold mt-3">امتیاز شما: <span className="text-2xl">{score}</span> از {lessonExercises.length}</p>
-            {/* Optionally, add a button to go back to lessons or a dashboard */}
         </div>
     );
   }
@@ -245,8 +252,28 @@ function InteractiveExercises({ lessonId, lessonTitle }) {
 
           <div className="mt-6 flex flex-col items-center">
             {showFeedback && feedback.message && (
-              <div dangerouslySetInnerHTML={{ __html: feedback.message }}
-                   className={`p-3.5 my-4 rounded-lg text-sm w-full text-center font-semibold border ${feedback.type === 'correct' ? 'bg-green-50 text-green-700 border-green-300' : 'bg-red-50 text-red-700 border-red-300'}`}>
+              <div className={`p-3.5 my-4 rounded-lg text-sm w-full text-right font-semibold border ${feedback.type === 'correct' ? 'bg-green-50 text-green-700 border-green-300' : 'bg-red-50 text-red-700 border-red-300'}`}>
+                <div dangerouslySetInnerHTML={{ __html: feedback.message }} className="whitespace-pre-line leading-relaxed"></div>
+
+                {feedback.type === 'incorrect' && lessonNavReference && lessonNavReference.displayText && onNavigateToLessonSection && (
+                  <div className="mt-3 pt-3 border-t border-red-200 text-center">
+                    <button
+                      onClick={handleNavigateClick}
+                      className="text-sm text-blue-600 hover:text-blue-800 underline focus:outline-none py-1 px-2 rounded hover:bg-blue-50 transition-colors"
+                    >
+                      &#128214; مشاهده بخش مرتبط در درس: "{lessonNavReference.displayText}"
+                    </button>
+                  </div>
+                )}
+
+                {/* Suggestion for compensatory exercises (if answer is incorrect) */}
+                {feedback.type === 'incorrect' && (
+                  <div className="mt-3 pt-3 border-t border-red-200 text-center"> {/* Use same styling as nav link's container or make it distinct */}
+                    <p className="text-xs text-gray-600 italic">
+                      &#128161; برای تقویت این مبحث، مطالعه مجدد و تمرینات جبرانی توصیه می‌شود (بخش تمرینات جبرانی در حال آماده‌سازی است).
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
@@ -259,13 +286,14 @@ function InteractiveExercises({ lessonId, lessonTitle }) {
                 ثبت پاسخ
               </button>
             ) : (
-              // Only show "Next Question" if there are more questions. Otherwise, the completion message will be shown.
+              // Conditionally render "Next Question" button or nothing if it's the last question and it's submitted.
+              // The completion message is handled by the top-level check (currentQuestionIndex >= lessonExercises.length)
               currentQuestionIndex < lessonExercises.length && (
                 <button
                   onClick={handleNextQuestion}
                   className="w-full md:w-1/2 lg:w-1/3 px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors"
                 >
-                  سوال بعدی &larr;
+                  {currentQuestionIndex === lessonExercises.length - 1 ? 'مشاهده نتایج' : 'سوال بعدی &larr;'}
                 </button>
               )
             )}

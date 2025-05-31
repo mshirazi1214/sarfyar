@@ -4,10 +4,12 @@
 
 body {
     font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-    /* Tailwind's default font stack is appended as a fallback */
 }
 
-/* Specific classes for fonts if needed, though body covers Vazirmatn */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Vazirmatn', sans-serif;
+}
+
 .font-vazir {
     font-family: 'Vazirmatn', sans-serif;
 }
@@ -16,11 +18,23 @@ body {
     font-family: 'Noto Naskh Arabic', serif;
 }
 
-/* Tailwind base styles might apply their own font normalization.
-   If you're using Tailwind, ensure its configuration or your global styles align.
-   Since we're using Tailwind CDN, direct body styling is a straightforward way. */
+/* Highlight style for lesson sections */
+.highlighted-section {
+  background-color: #fefce8 !important; /* Tailwind yellow-50 */
+  /* border: 2px dashed #facc15 !important; Tailwind yellow-400 - Dashed might be too much */
+  border-radius: 0.5rem !important; /* Tailwind rounded-lg */
 
-/* Add any other global styles or Tailwind overrides here */
-h1, h2, h3, h4, h5, h6 {
-    font-family: 'Vazirmatn', sans-serif; /* Ensure headings also use Vazirmatn */
+  /* Apply highlight using box-shadow for a less intrusive effect than a solid border */
+  box-shadow: 0 0 0 3px #fde047, 0 0 15px 5px rgba(250, 204, 21, 0.5) !important; /* Tailwind yellow-300 border, yellow-400 glow */
+
+  /* Ensure padding is applied to the section itself if it doesn't have its own internal padding */
+  /* If sections have their own p-4, this might make it too large. Adjust as needed. */
+  /* padding: 1rem !important; */
+
+  transition: box-shadow 0.4s ease-in-out, background-color 0.4s ease-in-out;
 }
+
+/* If sections already have padding, to avoid double padding, an alternative is to target an inner wrapper
+   if one exists, or accept that the highlight includes the section's own padding.
+   The current JS applies highlight to the <section> tag itself.
+*/
