@@ -1,27 +1,40 @@
 import React from 'react';
-import { mockBook } from '../mockBookData.js'; // Import mock data
+import { mockBook } from '../mockBookData.js';
 
-function BookStructureUploader() {
-  const [bookStructure, setBookStructure] = React.useState(mockBook); // Use mock data
+function BookStructureUploader({ onSelectLesson }) {
+  const [bookStructure, setBookStructure] = React.useState(mockBook);
 
   const handleFileUpload = (event) => {
-    // Placeholder for file handling logic
     console.log("File upload triggered (not implemented yet)");
-    // Actual file processing logic will be complex and likely require
-    // a backend or WebAssembly for PDF parsing, which is out of scope for this step.
   };
 
-  // Helper function to render lessons and topics
+  const handleLessonClick = (lessonId) => {
+    if (onSelectLesson) {
+      onSelectLesson(lessonId);
+      // Optionally scroll to the lesson display section
+      const lessonSection = document.getElementById('lesson-display-section');
+      if (lessonSection) {
+        lessonSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  };
+
   const renderLessons = (lessons) => {
     return (
       <ul className="list-none mr-0 pr-4 md:pr-6 space-y-2 mt-2">
         {lessons.map(lesson => (
-          <li key={lesson.id} className="text-gray-800 bg-blue-50 p-2 rounded-md">
-            <span className="font-semibold">{lesson.title}</span>
+          <li key={lesson.id} className="text-gray-800 bg-blue-50 p-2 rounded-md shadow-sm hover:bg-blue-100 transition-all duration-150 ease-in-out">
+            <button
+              onClick={() => handleLessonClick(lesson.id)}
+              className="font-semibold text-blue-700 hover:text-blue-800 hover:underline w-full text-right focus:outline-none focus:ring-2 focus:ring-blue-300 rounded"
+              title={`انتخاب درس: ${lesson.title}`}
+            >
+              {lesson.title}
+            </button>
             {lesson.topics && lesson.topics.length > 0 && (
               <ul className="list-disc mr-5 pr-5 space-y-1 mt-1">
                 {lesson.topics.map((topic, index) => (
-                  <li key={index} className="text-sm text-gray-700">{topic}</li>
+                  <li key={index} className="text-sm text-gray-600">{topic}</li>
                 ))}
               </ul>
             )}
@@ -31,7 +44,6 @@ function BookStructureUploader() {
     );
   };
 
-  // Helper function to render chapters
   const renderChapters = (chapters) => {
     return (
       <div className="space-y-4">
@@ -46,8 +58,8 @@ function BookStructureUploader() {
   };
 
   return (
-    <div className="p-4 md:p-6 bg-white shadow-lg rounded-xl mt-5 border border-gray-200">
-      <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-5 text-center border-b pb-3">
+    <div className="p-4 md:p-6 bg-white shadow-xl rounded-xl mt-0 border border-gray-200"> {/* Removed mt-5 for closer integration */}
+      <h2 className="text-xl md:text-2xl font-bold text-indigo-700 mb-5 text-center border-b-2 border-indigo-100 pb-3">
         ۱. ساختاردهی خودکار کتاب
       </h2>
 
@@ -71,8 +83,9 @@ function BookStructureUploader() {
 
       <div className="mt-8">
         <h3 className="text-lg md:text-xl font-semibold text-gray-800 mb-3 border-b pb-2">
-          ساختار کتاب: <span className="text-blue-600">{bookStructure.title}</span>
+          فهرست کتاب: <span className="text-blue-600">{bookStructure.title}</span>
         </h3>
+        <p className="text-sm text-gray-500 mb-3">برای مشاهده محتوای هر درس، روی عنوان آن کلیک کنید.</p>
         {bookStructure.chapters && bookStructure.chapters.length > 0 ? (
           renderChapters(bookStructure.chapters)
         ) : (
