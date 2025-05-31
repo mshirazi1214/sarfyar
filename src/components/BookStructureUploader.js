@@ -8,9 +8,9 @@ function BookStructureUploader({ onSelectLesson }) {
     console.log("File upload triggered (not implemented yet)");
   };
 
-  const handleLessonClick = (lessonId) => {
+  const handleLessonClick = (lessonId, lessonTitle) => { // Accept lessonTitle
     if (onSelectLesson) {
-      onSelectLesson(lessonId);
+      onSelectLesson(lessonId, lessonTitle); // Pass both id and title
       // Optionally scroll to the lesson display section
       const lessonSection = document.getElementById('lesson-display-section');
       if (lessonSection) {
@@ -25,7 +25,7 @@ function BookStructureUploader({ onSelectLesson }) {
         {lessons.map(lesson => (
           <li key={lesson.id} className="text-gray-800 bg-blue-50 p-2 rounded-md shadow-sm hover:bg-blue-100 transition-all duration-150 ease-in-out">
             <button
-              onClick={() => handleLessonClick(lesson.id)}
+              onClick={() => handleLessonClick(lesson.id, lesson.title)} // Pass lesson.title here
               className="font-semibold text-blue-700 hover:text-blue-800 hover:underline w-full text-right focus:outline-none focus:ring-2 focus:ring-blue-300 rounded"
               title={`انتخاب درس: ${lesson.title}`}
             >

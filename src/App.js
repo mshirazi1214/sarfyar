@@ -2,15 +2,24 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import BookStructureUploader from './components/BookStructureUploader.js';
-import LessonDisplay from './components/LessonDisplay.js'; // Import the new component
+import LessonDisplay from './components/LessonDisplay.js';
+import InteractiveExercises from './components/InteractiveExercises.js'; // Import the exercises component
 
 function App() {
   const [selectedLessonId, setSelectedLessonId] = React.useState(null);
+  const [selectedLessonTitle, setSelectedLessonTitle] = React.useState('');
 
-  const handleSelectLesson = (lessonId) => {
+  const handleSelectLesson = (lessonId, lessonTitle) => {
     setSelectedLessonId(lessonId);
-    console.log("Selected Lesson ID in App.js:", lessonId); // For debugging
-    // You could add logic here to scroll to the lesson display area if it's far down the page
+    setSelectedLessonTitle(lessonTitle);
+    console.log("Selected Lesson ID in App.js:", lessonId, "Title:", lessonTitle);
+    // Optionally, scroll to the lesson display section after a short delay to allow rendering
+    setTimeout(() => {
+        const lessonSection = document.getElementById('lesson-content-and-exercises-wrapper');
+        if (lessonSection) {
+            lessonSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }, 100);
   };
 
   return (
@@ -22,19 +31,18 @@ function App() {
       <main className="container mx-auto p-4 sm:p-6">
         <BookStructureUploader onSelectLesson={handleSelectLesson} />
 
-        {/* Placeholder for LessonDisplay - will be shown when a lesson is selected */}
         {selectedLessonId && (
-          <div id="lesson-display-section" className="mt-8 p-4 md:p-6 bg-white shadow-xl rounded-xl border border-gray-200">
-            <h2 className="text-xl md:text-2xl font-bold text-indigo-700 mb-5 text-center border-b-2 border-indigo-100 pb-3">
-              ۲. شرح درس و محتوا
-            </h2>
-            {/* <p className="text-center text-lg">
-              درس انتخاب شده: <span className="font-semibold text-blue-600">{selectedLessonId}</span>
-            </p>
-            <p className="text-center mt-2 text-gray-600">
-              (محتوای کامل این درس به‌زودی در اینجا توسط کامپوننت LessonDisplay نمایش داده خواهد شد.)
-            </p> */}
-            <LessonDisplay lessonId={selectedLessonId} /> {/* Use the LessonDisplay component */}
+          <div id="lesson-content-and-exercises-wrapper" className="mt-8 space-y-8"> {/* Wrapper & space between sections */}
+            <div id="lesson-display-section" className="p-4 md:p-6 bg-white shadow-xl rounded-xl border border-gray-200">
+              <h2 className="text-xl md:text-2xl font-bold text-indigo-700 mb-5 text-center border-b-2 border-indigo-100 pb-3">
+                ۲. شرح درس و محتوا
+              </h2>
+              <LessonDisplay lessonId={selectedLessonId} />
+            </div>
+
+            {/* Interactive Exercises Section is now a sibling, benefiting from the wrapper's spacing */}
+            {/* It will have its own styling for margin-top etc. as defined in InteractiveExercises.js, so mt-8 on wrapper is good */}
+            <InteractiveExercises lessonId={selectedLessonId} lessonTitle={selectedLessonTitle} />
           </div>
         )}
       </main>
